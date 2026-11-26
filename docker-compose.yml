@@ -1,0 +1,48 @@
+# 本地/测试环境拉起 MySQL + Redis（生产请用托管实例并配强密码、TLS、备份策略）
+# 用法：docker compose up -d
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: rbac-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_CHANGE_ME}
+      MYSQL_DATABASE: rbac
+      MYSQL_USER: rbac
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-CHANGE_ME}
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+08:00
+      # 连接空闲回收需晚于应用侧 DB_POOL_RECYCLE(1800s)，否则会拿到被服务端断开的连接
+      - --wait_timeout=28800
+      - --max_connections=500
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-root_CHANGE_ME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: rbac-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "allkeys-lru"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  mysql-data:
+  redis-data:

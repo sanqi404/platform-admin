@@ -1,0 +1,21 @@
+# ---- Web ----
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+python-multipart==0.0.20
+# ---- 数据校验 ----
+pydantic==2.10.4
+pydantic-settings==2.7.0
+email-validator==2.2.0
+# ---- ORM / 数据库驱动 ----
+sqlalchemy[asyncio]==2.0.36
+greenlet==3.5.6
+aiosqlite==0.20.0        # 本地开发（SQLite）
+asyncmy==0.2.10          # MySQL / MariaDB 异步驱动
+asyncpg==0.30.0          # PostgreSQL 异步驱动
+# ---- 迁移 ----
+alembic==1.14.0
+# ---- 缓存 / 会话 ----
+redis==5.2.1
+# ---- 安全 ----
+python-jose[cryptography]==3.3.0
+bcrypt==4.2.1
