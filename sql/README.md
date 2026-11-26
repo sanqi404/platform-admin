@@ -1,14 +1,3 @@
----
-AIGC:
-    Label: "1"
-    ContentProducer: 001191440300708461136T1XGW3
-    ProduceID: 9050c8968b179f6a41587a8c58f33663_64151c89e95c11f1aa8b525400dc9a98
-    ReservedCode1: G27ffUHontkOni5O2cljoM0crT4tjx/VJTcHaMfiFA5IEd/+X2ni5rGbFxS8/E0FYR3hU24VJL/EgF8nea5x/WP3zRAuM4WKKHQ6DH943X70I8PjuXgLFrIra3V9KZwbTs4uPCKLGoD8vRitHEnfY6xvMuw5j6izsApP2bRsRkb9JrNG90WWSufFx/w=
-    ContentPropagator: 001191440300708461136T1XGW3
-    PropagateID: 9050c8968b179f6a41587a8c58f33663_64151c89e95c11f1aa8b525400dc9a98
-    ReservedCode2: G27ffUHontkOni5O2cljoM0crT4tjx/VJTcHaMfiFA5IEd/+X2ni5rGbFxS8/E0FYR3hU24VJL/EgF8nea5x/WP3zRAuM4WKKHQ6DH943X70I8PjuXgLFrIra3V9KZwbTs4uPCKLGoD8vRitHEnfY6xvMuw5j6izsApP2bRsRkb9JrNG90WWSufFx/w=
----
-
 # 初始化 SQL
 
 由 `backend/app/models` 与种子数据导出，结果与 `backend/alembic` 迁移一致。给不走 Alembic 的场景用：DBA 审核后执行、离线交付、由其他平台导入建库。
@@ -65,4 +54,3 @@ MySQL 脚本头部已包含 `CREATE DATABASE IF NOT EXISTS rbac` 与 `SET FOREIG
 - 用本目录 SQL：导完即完成初始化，但后续若模型有变更，需要自己补 DDL。
 
 模型改动后重新导出本目录的脚本，避免它与 Alembic 迁移漂移。
-*（内容由AI生成，仅供参考）*
