@@ -1,5 +1,5 @@
 {
-  "name": "rbac-admin-frontend",
+  "name": "platform-admin-frontend",
   "private": true,
   "version": "1.0.0",
   "type": "module",
