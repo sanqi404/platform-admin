@@ -5,7 +5,7 @@
 不含任何业务模块——它只提供「加菜单、加页面、加权限点」的骨架，拿去当新项目的起点，或当作 RBAC 权限模型的参考实现。
 
 > **许可提示（请先读）**：本项目源码公开可读，但**不授权商业使用**。作者对商用行为不提供任何形式的技术支持，
-> 也不对商用产生的一切后果承担任何责任。详见 [LICENSE](LICENSE) 与文末「八、许可与商用声明」。
+> 也不对商用产生的一切后果承担任何责任。详见 [LICENSE](LICENSE) 与文末「六、许可与商用声明」。
 
 ## 能力一览
 
@@ -256,37 +256,7 @@ npm run dev        # http://127.0.0.1:5173
 
 ---
 
-## 四、日志审计
-
-### 登录日志（`sys_login_log`）
-
-`POST /auth/login` 的每个分支都落库：租户不存在 / 已停用 / 已过期 / 账号不存在 / 锁定中 /
-账号停用 / 密码错误 / 成功。字段含账号、时间、成功与否、失败原因、来源 IP 及归属
-（本机/内网/公网）、操作系统、浏览器、设备类型。
-
-### 操作日志（`sys_operation_log`）
-
-由 `OperationLogMiddleware` 自动采集，拦截 `POST/PUT/PATCH/DELETE` 以及路径含 `export` 的 GET，
-记录：账号、模块、动作语义（新增用户 / 删除角色 / 分配权限给角色 …）、请求方法、路径、查询串、
-操作对象、**脱敏后的请求参数**、状态码、成功标志、耗时、IP/归属、UA 解析结果。
-
-- 敏感字段（`password` / `token` / `secret` / `api_key` 等）统一替换为 `******`，超长截断 4000 字符；
-- 业务失败（4xx/5xx）同样留痕，排查时能看到「谁尝试做了什么、为什么没成」；
-- 日志写入走独立会话，写日志失败只打警告，绝不影响业务响应。
-
-### 接口与权限
-
-| 接口 | 权限码 |
-|---|---|
-| `GET /logs/login`、`GET /logs/operation`、`GET /logs/operation/{id}` | `system:loginlog:list` / `system:operlog:list` |
-| `DELETE /logs/login/{id}`、`DELETE /logs/operation/{id}` | `system:loginlog:delete` / `system:operlog:delete` |
-| `POST /logs/login/clean`、`POST /logs/operation/clean`（按时间点批量清理） | 同上 delete |
-
-全部按当前账号的 `tenant_id` 过滤，跨租户访问返回 403。
-
----
-
-## 五、接入 MySQL / Redis
+## 四、接入 MySQL / Redis
 
 数据源由 `DATABASE_URL` 单一变量驱动，业务代码零改动即可换库。三种连接串：
 
@@ -409,35 +379,7 @@ mysql -u root -p rbac < sql/mysql/02_seed.sql
 
 ---
 
-## 六、常见问题
-
-### macOS 上 `vite build` 报 rollup 原生模块 dlopen 失败
-
-现象：`Error: dlopen(... rollup.darwin-arm64.node ...) different Team IDs` / `Trying to load an unsigned library`。
-
-原因：所用 node 二进制带 Team ID 签名（常见于 App 内置 node、部分打包分发版），而 npm 装的 rollup 原生库是 adhoc 签名，macOS 的库校验拒绝混合签名。
-
-处理（任选其一）：
-
-```bash
-# 方案 A：换用系统/Homebrew 的 node 执行构建
-PATH=/opt/homebrew/bin:$PATH npm run build
-
-# 方案 B：给原生库重新做 adhoc 签名，使其与 node 一致
-codesign --force --sign - node_modules/@rollup/rollup-darwin-*/rollup.*.node
-```
-
-注意 `codesign --remove-signature` 会变成"无签名库"同样被拒，必须重新 `--sign -`。
-
-### 端口冲突
-
-后端默认 8000，前端 5173，代理目标写在 `frontend/vite.config.ts`。改后端端口时同步改代理 target，或前端建 `.env.local` 写 `VITE_API_BASE`（如使用绝对地址需后端 `CORS_ORIGINS` 放行）。
-
-### 改了角色权限但前端没变化
-
-权限快照在登录时下发，且后端有 180 秒缓存。授权保存时已按租户批量失效，前端重新登录（或刷新拿到新 profile）即可看到变化。
-
-## 七、生产部署要点
+## 五、生产部署要点
 
 - `SECRET_KEY` 必须替换，`DEBUG=false`。
 - 前端 `npm run build` 产出 `dist/`，由 Nginx 托管并把 `/api` 反代到后端。
@@ -446,7 +388,7 @@ codesign --force --sign - node_modules/@rollup/rollup-darwin-*/rollup.*.node
 
 ---
 
-## 八、许可与商用声明
+## 六、许可与商用声明
 
 本项目**源码公开，但仅授权非商业使用**。完整条款见 [LICENSE](LICENSE)，此处为中文摘要（以 LICENSE 正文为准）：
 
