@@ -1,14 +1,3 @@
----
-AIGC:
-    Label: "1"
-    ContentProducer: 001191440300708461136T1XGW3
-    ProduceID: 9050c8968b179f6a41587a8c58f33663_6358a0efe95c11f1afe3525400ffa3eb
-    ReservedCode1: ZlRDK5oPENNgmn9MSLdKTQffgifdFkIylkGsO5aFVZ5PTMB39utveSVZCWVO80e5Gx6v3oI8Iflxs3bU6T4uiZEchkxA4Lm+FlMyJdjPYzKX6IAkGgwayLc9hoyePMECGp6qzNex4Z9nfd2Ic6PG4d8rOadaQ8aODREFntFkSrwrKfPT/0+kyIY3UUU=
-    ContentPropagator: 001191440300708461136T1XGW3
-    PropagateID: 9050c8968b179f6a41587a8c58f33663_6358a0efe95c11f1afe3525400ffa3eb
-    ReservedCode2: ZlRDK5oPENNgmn9MSLdKTQffgifdFkIylkGsO5aFVZ5PTMB39utveSVZCWVO80e5Gx6v3oI8Iflxs3bU6T4uiZEchkxA4Lm+FlMyJdjPYzKX6IAkGgwayLc9hoyePMECGp6qzNex4Z9nfd2Ic6PG4d8rOadaQ8aODREFntFkSrwrKfPT/0+kyIY3UUU=
----
-
 # RBAC 管理平台底座
 
 一套可直接启动的管理后台底座：**多租户 + 功能权限 + 菜单权限 + 数据权限** 四层权限体系，
