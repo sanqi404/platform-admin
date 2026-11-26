@@ -5,7 +5,7 @@
 不含任何业务模块——它只提供「加菜单、加页面、加权限点」的骨架，拿去当新项目的起点，或当作 RBAC 权限模型的参考实现。
 
 > **许可提示（请先读）**：本项目源码公开可读，但**不授权商业使用**。作者对商用行为不提供任何形式的技术支持，
-> 也不对商用产生的一切后果承担任何责任。详见 [LICENSE](LICENSE) 与文末「九、许可与商用声明」。
+> 也不对商用产生的一切后果承担任何责任。详见 [LICENSE](LICENSE) 与文末「八、许可与商用声明」。
 
 ## 能力一览
 
@@ -256,132 +256,7 @@ npm run dev        # http://127.0.0.1:5173
 
 ---
 
-## 四、前端权限控制方式
-
-四种粒度，按场景选用：
-
-### 1. 路由级（页面）
-
-页面路由不写在代码里，而是由后端菜单表驱动：登录后 `registerMenuRoutes()` 按菜单的
-`path` / `component` / `perm_code` 调 `addRoute` 注册，守卫再按 `meta.perm` 拦截，无权限跳 `/403`。
-
-```ts
-// 菜单表一行 → 一条路由
-{ title: '用户管理', path: '/system/user', component: 'system/user/index', perm_code: 'system:user:list' }
-```
-
-因此**新增页面不需要改 `router/index.ts`**，见第五章。
-
-### 2. 菜单级（侧边栏）
-
-由后端 `/auth/profile` 返回的菜单树驱动，前端再用 `perm_code` 二次校验：
-
-```vue
-<!-- components/SidebarItem.vue -->
-<el-menu-item v-if="allowed" :index="item.path">...</el-menu-item>
-```
-
-顶栏不再提供「显示无权限菜单」演示开关：无权限菜单一律不进入 DOM，避免暴露节点结构。
-
-### 3. 元素级（按钮）
-
-**推荐：指令**
-
-```vue
-<el-button v-perm="'system:user:create'">新建</el-button>        <!-- 无权限 → 移除节点（类 v-if） -->
-<el-button v-perm:show="'system:user:update'">编辑</el-button>   <!-- 无权限 → display:none（类 v-show） -->
-<el-button v-perm="['a:b:c', 'a:b:d']">任一命中</el-button>
-<el-button v-perm.all="['a:b:c', 'a:b:d']">全部命中</el-button>
-<el-button v-role="'super_admin'">仅超管</el-button>
-```
-
-**等价写法**
-
-```vue
-<el-button v-if="user.hasPerm('system:user:create')">新建</el-button>
-<el-button v-show="user.hasPerm('system:user:update')">编辑</el-button>
-```
-
-### 4. 编程式
-
-```ts
-const user = useUserStore()
-if (user.hasPerm('system:role:grant')) { ... }
-if (user.hasAnyPerm(['a:b:c', 'a:b:d'])) { ... }
-```
-
-### v-if 还是 v-show？选型建议
-
-| 场景 | 选择 | 原因 |
-|---|---|---|
-| 侧边栏菜单 | `v-if` | 无权限节点不应进入 DOM，减少信息暴露；菜单量小、切换不频繁 |
-| 表格行内按钮 | 指令（默认移除） | 批量渲染省节点，可读性优于重复写表达式 |
-| 高频切换的状态块 | `v-show` | 仅切 `display`，避免反复销毁重建、丢失表单状态 |
-| 路由页面 | 守卫 `meta.perm` | 进入前拦截，比渲染后隐藏更安全 |
-| 接口数据 | 后端校验 | 前端判断可绕过，权限必须后端兜底 |
-
----
-
-## 五、怎么加一个菜单 / 一个页面
-
-三步，全程不碰 `router/index.ts`。
-
-### 1. 建页面文件
-
-路径即菜单的 `component`，两种写法都支持（`src/views` 下自动扫描）：
-
-```
-src/views/asset/host/index.vue      → 菜单 component 填 asset/host/index
-src/views/asset/host.vue            → 菜单 component 填 asset/host.vue
-```
-
-页面内按钮用权限指令，列表沿用统一 axios 封装：
-
-```vue
-<el-button v-perm="'asset:host:create'" type="primary">新增主机</el-button>
-```
-
-### 2. 加菜单（后端 `app/init_db.py`，重跑即生效）
-
-```python
-# 权限点：模块:资源:动作
-("asset:host:list", "主机查询", "asset", "主机"),
-("asset:host:create", "主机新增", "asset", "主机"),
-
-# 菜单：dir 分组 → menu 页面 → button 按钮
-{"title": "资产管理", "name": "Asset", "path": "/asset", "type": "dir", "icon": "Box", "children": [
-    {"title": "主机列表", "name": "AssetHost", "path": "/asset/host",
-     "component": "asset/host/index", "type": "menu", "perm_code": "asset:host:list",
-     "children": [
-         {"title": "新增", "name": "AssetHostCreate", "type": "button",
-          "perm_code": "asset:host:create"},
-     ]},
-]},
-```
-
-```bash
-cd backend && python -m app.init_db     # 幂等，可反复执行
-```
-
-### 3. 授权并验收
-
-用 admin 登录 → 「角色权限 → 分配权限」勾上新权限点与菜单 → 保存 → 目标账号重新登录
-（或刷新页面）即可在侧边栏看到入口，直接访问 `/asset/host` 也放行。
-
-> 只想让页面进得去、按钮不加控制时，菜单的 `perm_code` 留空即可（表示只需登录）。
-> 接口侧记得用 `Depends(require_perm('asset:host:list'))` 兜底，前端隐藏不构成安全边界。
-
-### 加菜单时容易踩的三个点
-
-| 现象 | 原因 |
-|---|---|
-| 侧边栏有，点进去 404 | 菜单 `component` 与 `views` 下真实文件路径不一致 |
-| 点进去 403 | 菜单 `perm_code` 有值但角色未授权 |
-| 刷新后 404、再点一次又正常 | 动态路由注册顺序问题，本项目已在守卫里 `replace` 重走一次解决，自定义守卫时别破坏这段逻辑 |
-
----
-
-## 五之二、日志审计
+## 四、日志审计
 
 ### 登录日志（`sys_login_log`）
 
@@ -411,7 +286,7 @@ cd backend && python -m app.init_db     # 幂等，可反复执行
 
 ---
 
-## 六、接入 MySQL / Redis
+## 五、接入 MySQL / Redis
 
 数据源由 `DATABASE_URL` 单一变量驱动，业务代码零改动即可换库。三种连接串：
 
@@ -534,7 +409,7 @@ mysql -u root -p rbac < sql/mysql/02_seed.sql
 
 ---
 
-## 七、常见问题
+## 六、常见问题
 
 ### macOS 上 `vite build` 报 rollup 原生模块 dlopen 失败
 
@@ -562,7 +437,7 @@ codesign --force --sign - node_modules/@rollup/rollup-darwin-*/rollup.*.node
 
 权限快照在登录时下发，且后端有 180 秒缓存。授权保存时已按租户批量失效，前端重新登录（或刷新拿到新 profile）即可看到变化。
 
-## 八、生产部署要点
+## 七、生产部署要点
 
 - `SECRET_KEY` 必须替换，`DEBUG=false`。
 - 前端 `npm run build` 产出 `dist/`，由 Nginx 托管并把 `/api` 反代到后端。
@@ -571,7 +446,7 @@ codesign --force --sign - node_modules/@rollup/rollup-darwin-*/rollup.*.node
 
 ---
 
-## 九、许可与商用声明
+## 八、许可与商用声明
 
 本项目**源码公开，但仅授权非商业使用**。完整条款见 [LICENSE](LICENSE)，此处为中文摘要（以 LICENSE 正文为准）：
 
